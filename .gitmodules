@@ -1,0 +1,3 @@
+[submodule "external/libDirectional"]
+	path = external/libDirectional
+	url = https://github.com/libDirectional/libDirectional.git
