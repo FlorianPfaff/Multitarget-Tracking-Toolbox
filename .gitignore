@@ -1,0 +1,14 @@
+*~
+
+output
+*.mexw64
+*.mexw32
+*.mexa64
+*.mexmaci64
+*.bak
+
+.DS_Store
+
+Thumbs.db*
+*.asv
+testResults.tap
