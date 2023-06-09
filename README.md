@@ -13,3 +13,6 @@ Lead author: Florian Pfaff, pfaff@kit.edu
 Contributers:
 * Eugen Ernst, eugen.ernst@kit.edu
 * Marcus Baum, marcus.baum@cs.uni-goettingen.de
+
+## License
+The library is licensed under the MIT license.
