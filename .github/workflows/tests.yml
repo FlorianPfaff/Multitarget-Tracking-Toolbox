@@ -1,0 +1,59 @@
+name: Run MATLAB Tests on GitHub-Hosted Runner
+
+permissions: read-all
+
+on: # yamllint disable-line rule:truthy
+  push:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-tests:
+    name: Checkout, Compile and Test
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Check out FilterEvaluationFramework repository
+        uses: actions/checkout@v3
+        with:
+          path: Multitarget-Tracking-Toolbox
+
+      - name: Check out libDirectional repository
+        uses: actions/checkout@v3
+        with:
+          repository: libDirectional/libDirectional
+          path: libDirectional
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1
+
+      - name: Add lib directory to path and compile
+        uses: matlab-actions/run-command@v1
+        with:
+          command: "addpath(genpath('libDirectional')); compileAll;"
+
+      - name: Run tests in Multitarget-Tracking-Toolbox/tests
+        uses: matlab-actions/run-tests@v1
+        with:
+          test-results-junit: test-results/results.xml
+          code-coverage-cobertura: code-coverage/coverage.xml
+          source-folder: Multitarget-Tracking-Toolbox;libDirectional/lib
+          select-by-folder: Multitarget-Tracking-Toolbox/tests
+        
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: test-results/results.xml
+
+      - name: Publish Code Coverage Results
+        uses: 5monkeys/cobertura-action@master
+        if: always()
+        with:
+          path: code-coverage/coverage.xml
+          minimum_coverage: 20
