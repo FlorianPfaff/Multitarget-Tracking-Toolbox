@@ -55,7 +55,7 @@ jobs:
         with:
           python-version: '3.10'  # Or another version if needed
 
-      - name: Remove libDirectional from coverage.xml
+      - name: Remove libDirectional from coverage.xml and recalculate coverage
         run: |
           echo "Installing lxml..."
           pip install lxml
@@ -67,10 +67,28 @@ jobs:
           tree = ET.parse('code-coverage/coverage.xml')
           root = tree.getroot()
 
+          total_lines = 0
+          total_covered = 0
+
           for class_ in root.findall(".//class"):
               filename = class_.get('filename')
               if filename.startswith('libDirectional'):
                   class_.getparent().remove(class_)
+              else:
+                  for line in class_.findall('.//line'):
+                      total_lines += 1
+                      if int(line.get('hits')) > 0:
+                          total_covered += 1
+
+          # Recalculate coverage percentage
+          coverage = (total_covered / total_lines) * 100 if total_lines != 0 else 0
+
+          # Update the root element's attributes
+          coverage_node = root.find('.//coverage')
+          if coverage_node is not None:
+              coverage_node.set('lines-valid', str(total_lines))
+              coverage_node.set('lines-covered', str(total_covered))
+              coverage_node.set('line-rate', str(coverage))
 
           tree.write('code-coverage/coverage.xml')
           END
