@@ -53,9 +53,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'  # Or another version if needed
+          python-version: '3.10'  # Or another version if Matlab requires it
 
-      - name: Remove libDirectional from coverage.xml
+      - name: Display coverage.xml before modifications
+        run: cat code-coverage/coverage.xml
+  
+      - name: Remove libDirectional from coverage.xml and recalculate coverage
         run: |
           echo "Installing lxml..."
           pip install lxml
@@ -67,13 +70,38 @@ jobs:
           tree = ET.parse('code-coverage/coverage.xml')
           root = tree.getroot()
 
+          total_lines = 0
+          total_covered = 0
+
           for class_ in root.findall(".//class"):
               filename = class_.get('filename')
               if filename.startswith('libDirectional'):
                   class_.getparent().remove(class_)
+              else:
+                  for line in class_.findall('.//line'):
+                      total_lines += 1
+                      if int(line.get('hits')) > 0:
+                          total_covered += 1
+
+          # Recalculate coverage percentage
+          coverage = (float(total_covered) / total_lines) * 100 if total_lines != 0 else 0
+
+          # Update the root element's attributes
+          root.set('lines-valid', str(total_lines))
+          root.set('lines-covered', str(total_covered))
+          root.set('line-rate', str(coverage / 100))
+
+          # Update package attributes
+          for package in root.findall('.//package'):
+              package.set('lines-valid', str(total_lines))
+              package.set('lines-covered', str(total_covered))
+              package.set('line-rate', str(coverage / 100))
 
           tree.write('code-coverage/coverage.xml')
           END
+       
+      - name: Display coverage.xml after modifications
+        run: cat code-coverage/coverage.xml
 
       - name: Publish Code Coverage Results
         uses: 5monkeys/cobertura-action@master
