@@ -44,12 +44,36 @@ jobs:
           source-folder: Multitarget-Tracking-Toolbox;libDirectional/lib
           select-by-folder: Multitarget-Tracking-Toolbox/tests
         
-
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           files: test-results/results.xml
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'  # Or another version if needed
+
+      - name: Remove libDirectional from coverage.xml
+        run: |
+          echo "Installing lxml..."
+          pip install lxml
+          
+          echo "Modifying coverage.xml..."
+          python - << END
+          import lxml.etree as ET
+
+          tree = ET.parse('code-coverage/coverage.xml')
+          root = tree.getroot()
+
+          for class_ in root.findall(".//class"):
+              filename = class_.get('filename')
+              if filename.startswith('libDirectional'):
+                  class_.getparent().remove(class_)
+
+          tree.write('code-coverage/coverage.xml')
+          END
 
       - name: Publish Code Coverage Results
         uses: 5monkeys/cobertura-action@master
