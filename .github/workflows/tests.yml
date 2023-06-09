@@ -91,7 +91,7 @@ jobs:
           if coverage_node is not None:
               coverage_node.set('lines-valid', str(total_lines))
               coverage_node.set('lines-covered', str(total_covered))
-              coverage_node.set('line-rate', str(coverage / 100))
+              coverage_node.set('line-rate', str(coverage))
 
           tree.write('code-coverage/coverage.xml')
           END
