@@ -55,6 +55,9 @@ jobs:
         with:
           python-version: '3.10'  # Or another version if needed
 
+      - name: Display coverage.xml after modifications
+        run: cat code-coverage/coverage.xml
+  
       - name: Remove libDirectional from coverage.xml and recalculate coverage
         run: |
           echo "Installing lxml..."
@@ -88,10 +91,13 @@ jobs:
           if coverage_node is not None:
               coverage_node.set('lines-valid', str(total_lines))
               coverage_node.set('lines-covered', str(total_covered))
-              coverage_node.set('line-rate', str(coverage))
+              coverage_node.set('line-rate', str(coverage / 100))
 
           tree.write('code-coverage/coverage.xml')
           END
+
+      - name: Display coverage.xml after modifications
+        run: cat code-coverage/coverage.xml
 
       - name: Publish Code Coverage Results
         uses: 5monkeys/cobertura-action@master
