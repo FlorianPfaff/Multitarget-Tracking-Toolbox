@@ -84,17 +84,18 @@ jobs:
                           total_covered += 1
 
           # Recalculate coverage percentage
-          coverage = (total_covered / total_lines) * 100 if total_lines != 0 else 0
+          coverage = (float(total_covered) / total_lines) * 100 if total_lines != 0 else 0
 
           # Update the root element's attributes
           coverage_node = root.find('.//coverage')
           if coverage_node is not None:
               coverage_node.set('lines-valid', str(total_lines))
               coverage_node.set('lines-covered', str(total_covered))
-              coverage_node.set('line-rate', str(coverage))
+              coverage_node.set('line-rate', str(coverage / 100))  # Not dividing by 100
 
           tree.write('code-coverage/coverage.xml')
           END
+
 
       - name: Display coverage.xml after modifications
         run: cat code-coverage/coverage.xml
